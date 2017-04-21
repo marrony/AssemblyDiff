@@ -65,9 +65,28 @@ namespace AssemblyDiff
             var isMinor = diffs.Count() > 0 && diffs.All(x => x.Type == DiffType.Add);
             var isPatch = diffs.Count() == 0;
 
-            var major = version.Major + (isMajor ? 1 : 0);
-            var minor = version.Minor + (isMinor ? 1 : 0);
-            var patch = version.Build + (isPatch ? 1 : 0);
+            int major = 0, minor = 0, patch = 0;
+
+            if (isMajor)
+            {
+                major = version.Major + 1;
+                minor = 0;
+                patch = 0;
+            }
+
+            if (isMinor)
+            {
+                major = version.Major;
+                minor = version.Minor + 1;
+                patch = 0;
+            }
+
+            if (isPatch)
+            {
+                major = version.Major;
+                minor = version.Minor;
+                patch = version.Build + 1;
+            }
 
             return new Version(major, minor, patch, 0);
         }
@@ -96,9 +115,13 @@ namespace AssemblyDiff
             var newModule = Assembly.LoadFrom(newAssembly);
             var diffs = Module.Diff(oldModule, newModule);
 
-            var version = oldModule.GetName().Version;
-            Console.WriteLine($"Old version: {version}");
-            Console.WriteLine($"New version: {Module.CalculateVersion(version, diffs)}");
+            var oldVersion = oldModule.GetName().Version;
+            var newVersion = Module.CalculateVersion(oldVersion, diffs);
+            Console.WriteLine($"Old version: {oldVersion}");
+            Console.WriteLine($"New version: {newVersion}");
+
+            if (newModule.GetName().Version != newVersion)
+                Console.WriteLine($"Does not publish, the version of new assembly is wrong: {newModule.GetName().Version}");
 
             var diffsStr = diffs.Select(x => x.ToString());
             Console.WriteLine("\nDifferences:");

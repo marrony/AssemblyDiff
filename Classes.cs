@@ -118,6 +118,8 @@ namespace AssemblyDiff
             if (a.IsInterface != b.IsInterface) return true;
             if (a.IsAbstract != b.IsAbstract) return true;
             if (a.IsValueType != b.IsValueType) return true;
+            if (!a.IsInterface && a.BaseType.GetName() != b.BaseType.GetName()) return true;
+
             return false;
         }
 
